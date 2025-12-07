@@ -1,35 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+
+//Create Input Box = done
+//Create Button make that button add task to list = done
+//display list of tasks = done
+//add checkbox to list of task = done
+//add delete button for each task = done
+//make input clear after adding task = done
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [inputValue, setInputValue] = useState("");
+  const [tasks, setTasks] = useState([]);
+
+  const handleChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+  const handleClick = () => {
+    setTasks([
+      ...tasks,
+      { id: Date.now(), text: inputValue, completed: false },
+    ]);
+    setInputValue("");
+  };
+
+  const handleToggle = (id) => {
+    const newTasks = tasks.map((task) => {
+      if (task.id === id) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+    setTasks(newTasks);
+  };
+
+  const handleDelete = (id) => {
+    const newTasks = tasks.filter((task) => task.id !== id);
+    setTasks(newTasks);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <input type="text" value={inputValue} onChange={handleChange} />
+      <button onClick={handleClick}>Click Me</button>
+
+      <ul>
+        {tasks.map((task) => (
+          <div key ={task.id}>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => handleToggle(task.id)}
+            />
+            {task.text}
+            <button onClick={() => handleDelete(task.id)}>Delete</button>
+          </div>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
