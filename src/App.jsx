@@ -1,24 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-//Create Input Box = done
-//Create Button make that button add task to list = done
-//display list of tasks = done
-//add checkbox to list of task = done
-//add delete button for each task = done
-//make input clear after adding task = done
+//prevent adding empty task = done
+// make completed task look different (strikthrough/gray) = done
+//add date to each task = done
+// save tasks to localstorage = done
 
 function App() {
   const [inputValue, setInputValue] = useState("");
-  const [tasks, setTasks] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("Personal");
+  const [currentView, setCurrentView] = useState("Personal");
+
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  });
 
   const handleChange = (event) => {
     setInputValue(event.target.value);
   };
 
   const handleClick = () => {
+    if (inputValue.trim() === "") {
+      return;
+    }
     setTasks([
       ...tasks,
-      { id: Date.now(), text: inputValue, completed: false },
+      {
+        id: Date.now(),
+        text: inputValue,
+        completed: false,
+        date: new Date().toISOString().split("T")[0],
+        category: selectedCategory,
+      },
     ]);
     setInputValue("");
   };
@@ -40,21 +57,45 @@ function App() {
 
   return (
     <div>
+      <div>
+        <h3> My Tasks</h3>
+        <button onClick={() => setCurrentView("Personal")}> Personal </button>
+        <button onClick={() => setCurrentView("Work")}> Work </button>
+        <button onClick={() => setCurrentView("Shopping")}> Shopping </button>
+      </div>
       <input type="text" value={inputValue} onChange={handleChange} />
-      <button onClick={handleClick}>Click Me</button>
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+      >
+        <option value="Personal"> Personal </option>
+        <option value="Work"> Work </option>
+        <option value="Shopping"> Shopping </option>
+      </select>
 
+      <button onClick={handleClick}>Add Task</button>
       <ul>
-        {tasks.map((task) => (
-          <div key ={task.id}>
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => handleToggle(task.id)}
-            />
-            {task.text}
-            <button onClick={() => handleDelete(task.id)}>Delete</button>
-          </div>
-        ))}
+        {tasks
+          .filter((task) => task.category === currentView)
+          .map((task) => (
+            <div key={task.id}>
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => handleToggle(task.id)}
+              />
+              <span
+                style={{
+                  textDecoration: task.completed ? "line-through" : "none",
+                  color: task.completed ? "gray" : "black",
+                }}
+              >
+                {task.text}
+              </span>
+              <small>({task.date})</small>
+              <button onClick={() => handleDelete(task.id)}>Delete</button>
+            </div>
+          ))}
       </ul>
     </div>
   );
