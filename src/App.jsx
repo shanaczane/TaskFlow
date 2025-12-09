@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
 
-//prevent adding empty task = done
-// make completed task look different (strikthrough/gray) = done
-//add date to each task = done
-// save tasks to localstorage = done
-
 function App() {
   const [inputValue, setInputValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Personal");
