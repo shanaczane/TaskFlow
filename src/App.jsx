@@ -1,27 +1,37 @@
 import { useEffect, useState } from "react";
+import { loadFromLocalStorage, saveToLocalStorage } from "./utils/LocalStorage";
+import LeftSidebar from "./components/LeftSideBar";
+import MiddlePanel from "./components/MiddlePanel";
+import RightSidebar from "./components/RightSidebar";
 
 function App() {
+  const [tasks, setTasks] = useState(() => loadFromLocalStorage("tasks", []));
+  const [categories, setCategories] = useState(() =>
+    loadFromLocalStorage("categories", ["Personal", "Work", "Shopping"])
+  );
   const [inputValue, setInputValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Personal");
-  const [currentView, setCurrentView] = useState("Personal");
-
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [currentView, setCurrentView] = useState("Today");
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    loadFromLocalStorage("theme", "light") === "dark"
+  );
 
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  });
+    saveToLocalStorage("tasks", tasks);
+  }, [tasks]);
 
-  const handleChange = (event) => {
-    setInputValue(event.target.value);
-  };
+  useEffect(() => {
+    saveToLocalStorage("categories", categories);
+  }, [categories]);
+
+  useEffect(() => {
+    saveToLocalStorage("theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
+  const handleChange = (e) => setInputValue(e.target.value);
 
   const handleClick = () => {
-    if (inputValue.trim() === "") {
-      return;
-    }
+    if (inputValue.trim() === "") return;
     setTasks([
       ...tasks,
       {
@@ -30,68 +40,74 @@ function App() {
         completed: false,
         date: new Date().toISOString().split("T")[0],
         category: selectedCategory,
+        important: false,
       },
     ]);
     setInputValue("");
   };
 
   const handleToggle = (id) => {
-    const newTasks = tasks.map((task) => {
-      if (task.id === id) {
-        return { ...task, completed: !task.completed };
-      }
-      return task;
-    });
-    setTasks(newTasks);
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
   };
 
   const handleDelete = (id) => {
-    const newTasks = tasks.filter((task) => task.id !== id);
-    setTasks(newTasks);
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  return (
-    <div>
-      <div>
-        <h3> My Tasks</h3>
-        <button onClick={() => setCurrentView("Personal")}> Personal </button>
-        <button onClick={() => setCurrentView("Work")}> Work </button>
-        <button onClick={() => setCurrentView("Shopping")}> Shopping </button>
-      </div>
-      <input type="text" value={inputValue} onChange={handleChange} />
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-      >
-        <option value="Personal"> Personal </option>
-        <option value="Work"> Work </option>
-        <option value="Shopping"> Shopping </option>
-      </select>
+  const handleToggleImportant = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, important: !task.important } : task
+      )
+    );
+  };
 
-      <button onClick={handleClick}>Add Task</button>
-      <ul>
-        {tasks
-          .filter((task) => task.category === currentView)
-          .map((task) => (
-            <div key={task.id}>
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => handleToggle(task.id)}
-              />
-              <span
-                style={{
-                  textDecoration: task.completed ? "line-through" : "none",
-                  color: task.completed ? "gray" : "black",
-                }}
-              >
-                {task.text}
-              </span>
-              <small>({task.date})</small>
-              <button onClick={() => handleDelete(task.id)}>Delete</button>
-            </div>
-          ))}
-      </ul>
+  const handleAddCategory = (newCategory) => {
+    if (newCategory.trim() && !categories.includes(newCategory)) {
+      setCategories([...categories, newCategory]);
+    }
+  };
+
+  let filteredTasks = [];
+  if (currentView === "Today") {
+    const today = new Date().toISOString().split("T")[0];
+    filteredTasks = (tasks || []).filter((task) => task.date === today);
+  } else if (currentView === "Important") {
+    filteredTasks = (tasks || []).filter((task) => task.important);
+  } else {
+    filteredTasks = (tasks || []).filter((task) => task.category === currentView);
+  }
+
+  return (
+    <div
+      data-theme={isDarkMode ? "dark" : "light"}
+      style={{ display: "flex", height: "100vh" }}
+    >
+      <LeftSidebar
+        categories={categories}
+        tasks={tasks}
+        currentView={currentView}
+        onAddCategory={handleAddCategory}
+        onSelectView={setCurrentView}
+      />
+      <MiddlePanel
+        currentView={currentView}
+        filteredTasks={filteredTasks}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categories={categories}
+        onAddTask={handleClick}
+        onToggleTask={handleToggle}
+        onDeleteTask={handleDelete}
+        onToggleImportant={handleToggleImportant}
+      />
+      <RightSidebar />
     </div>
   );
 }
