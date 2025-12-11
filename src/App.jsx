@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { loadFromLocalStorage, saveToLocalStorage } from "./utils/LocalStorage";
 import LeftSidebar from "./components/LeftSideBar";
 import MiddlePanel from "./components/MiddlePanel";
-import RightSidebar from "./components/RightSidebar";
+import RightSidebar from "./components/RightSidebar"; 
 
 function App() {
   const [tasks, setTasks] = useState(() => loadFromLocalStorage("tasks", []));
@@ -55,7 +55,7 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    setTasks(tasks.filter((task) => task.id !== id)); 
   };
 
   const handleToggleImportant = (id) => {
@@ -72,6 +72,16 @@ function App() {
     }
   };
 
+  const handleDeleteCategory = (categoryToDelete) => {
+    setCategories(categories.filter((cat) => cat !== categoryToDelete));
+    
+    setTasks(tasks.filter((task) => task.category !== categoryToDelete));
+    
+    if (currentView === categoryToDelete) {
+      setCurrentView("Today");
+    }
+  };
+
   let filteredTasks = [];
   if (currentView === "Today") {
     const today = new Date().toISOString().split("T")[0];
@@ -85,13 +95,18 @@ function App() {
   return (
     <div
       data-theme={isDarkMode ? "dark" : "light"}
-      style={{ display: "flex", height: "100vh" }}
+      style={{
+        display: "flex",
+        height: "100vh",
+        backgroundColor: isDarkMode ? "#121212" : "#f9f9f9",
+      }}
     >
       <LeftSidebar
         categories={categories}
         tasks={tasks}
         currentView={currentView}
         onAddCategory={handleAddCategory}
+        onDeleteCategory={handleDeleteCategory}
         onSelectView={setCurrentView}
       />
       <MiddlePanel
