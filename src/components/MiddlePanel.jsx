@@ -1,15 +1,16 @@
-// src/components/MiddlePanel.jsx
+import TaskItem from "./TaskItem";
+
 function MiddlePanel({
   currentView,
   filteredTasks,
   inputValue,
-  onChange,
+  setInputValue,
   selectedCategory,
   setSelectedCategory,
   categories,
   onAddTask,
-  onToggle,
-  onDelete,
+  onToggleTask,
+  onDeleteTask,
   onToggleImportant,
   isDarkMode,
 }) {
@@ -23,33 +24,55 @@ function MiddlePanel({
       }}
     >
       <h2>{currentView}</h2>
-      <input type="text" value={inputValue} onChange={onChange} placeholder="+ Add Task" />
-      <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="+ Add Task"
+        style={{
+          marginRight: "10px",
+          padding: "5px",
+          backgroundColor: isDarkMode ? "#333" : "#fff",
+          color: isDarkMode ? "#fff" : "#000",
+        }}
+      />
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        style={{
+          marginRight: "10px",
+          padding: "5px",
+          backgroundColor: isDarkMode ? "#333" : "#fff",
+          color: isDarkMode ? "#fff" : "#000",
+        }}
+      >
         {categories.map((cat) => (
           <option key={cat} value={cat}>
             {cat}
           </option>
         ))}
       </select>
-      <button onClick={onAddTask}>Add</button>
-      <ul>
+      <button
+        onClick={onAddTask}
+        style={{
+          padding: "5px 10px",
+          backgroundColor: "#000",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Add
+      </button>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {filteredTasks.map((task) => (
-          <li key={task.id} style={{ listStyle: "none", margin: "10px 0" }}>
-            <input type="checkbox" checked={task.completed} onChange={() => onToggle(task.id)} />
-            <span
-              style={{
-                textDecoration: task.completed ? "line-through" : "none",
-                color: task.completed ? "gray" : (isDarkMode ? "#fff" : "#000"),
-              }}
-            >
-              {task.text}
-            </span>
-            <small style={{ color: "gray" }}>({task.date})</small>
-            <button onClick={() => onToggleImportant(task.id)}>
-              {task.important ? "★" : "☆"} {/* Star for important */}
-            </button>
-            <button onClick={() => onDelete(task.id)}>Delete</button>
-          </li>
+          <TaskItem
+            key={task.id}
+            task={task}
+            onToggle={onToggleTask}
+            onDelete={onDeleteTask}
+            onToggleImportant={onToggleImportant}
+          />
         ))}
       </ul>
     </div>
