@@ -1,4 +1,3 @@
-// src/components/LeftSidebar.jsx
 import { useState } from "react";
 
 function LeftSideBar({
@@ -7,7 +6,7 @@ function LeftSideBar({
   currentView,
   onSelectView,
   onAddCategory,
-  isDarkMode,
+  onDeleteCategory, // New prop
 }) {
   const [newCategory, setNewCategory] = useState("");
 
@@ -22,23 +21,20 @@ function LeftSideBar({
   };
 
   return (
-    <div
-      style={{
-        width: "250px",
-        padding: "20px",
-        borderRight: "1px solid #ddd",
-        backgroundColor: isDarkMode ? "#1e1e1e" : "#fff",
-        color: isDarkMode ? "#fff" : "#000",
-      }}
-    >
-      {/* Top: Quick views */}
+    <div style={{ width: "250px", padding: "20px", borderRight: "1px solid #ddd" }}>
+      {/* Top: Quick views with visible colors */}
       <button
         onClick={() => onSelectView("Today")}
         style={{
           display: "block",
           width: "100%",
           textAlign: "left",
-          background: currentView === "Today" ? (isDarkMode ? "#333" : "#eee") : "transparent",
+          background: currentView === "Today" ? "#ddd" : "#f0f0f0", // Light gray for visibility
+          color: "#000", // Black text always
+          padding: "10px",
+          marginBottom: "5px",
+          border: "none",
+          cursor: "pointer",
         }}
       >
         Today ({todayCount})
@@ -49,7 +45,12 @@ function LeftSideBar({
           display: "block",
           width: "100%",
           textAlign: "left",
-          background: currentView === "Important" ? (isDarkMode ? "#333" : "#eee") : "transparent",
+          background: currentView === "Important" ? "#ddd" : "#f0f0f0",
+          color: "#000",
+          padding: "10px",
+          marginBottom: "5px",
+          border: "none",
+          cursor: "pointer",
         }}
       >
         Important ({importantCount})
@@ -58,19 +59,27 @@ function LeftSideBar({
       {/* Bottom: My Tasks */}
       <h3>My Tasks</h3>
       {categories.map((cat) => (
-        <button
-          key={cat}
-          onClick={() => onSelectView(cat)}
-          style={{
-            display: "block",
-            width: "100%",
-            textAlign: "left",
-            color: getCategoryColor(cat), 
-            background: currentView === cat ? (isDarkMode ? "#333" : "#eee") : "transparent",
-          }}
-        >
-          # {cat} ({tasks.filter((task) => task.category === cat).length})
-        </button>
+        <div key={cat} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+          <button
+            onClick={() => onSelectView(cat)}
+            style={{
+              flex: 1,
+              textAlign: "left",
+              color: getCategoryColor(cat),
+              background: currentView === cat ? "#ddd" : "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            # {cat} ({tasks.filter((task) => task.category === cat).length})
+          </button>
+          <button
+            onClick={() => onDeleteCategory(cat)}
+            style={{ marginLeft: "10px", color: "red", border: "none", cursor: "pointer" }}
+          >
+            x
+          </button>
+        </div>
       ))}
       <input
         type="text"
@@ -83,13 +92,12 @@ function LeftSideBar({
   );
 }
 
-
 function getCategoryColor(cat) {
   const colors = {
     Personal: "blue",
     Work: "green",
     Shopping: "orange",
-    Education: "purple", 
+    // Add more 
   };
   return colors[cat] || "black";
 }
